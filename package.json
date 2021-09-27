@@ -19,6 +19,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.5",
     "chai": "^4.3.4",
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^3.3.0",
@@ -27,11 +28,14 @@
     "hardhat-deploy": "^0.7.5",
     "hardhat-ethers": "^1.0.1",
     "hardhat-gas-reporter": "^1.0.4",
+    "hardhat-abi-exporter": "^2.2.1",
+    "hardhat-contract-sizer": "^2.0.3",
     "husky": "^6.0.0",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.10",
     "pretty-quick": "^3.1.0",
     "solc": "0.6.12",
-    "solidity-coverage": "^0.7.16"
+    "solidity-coverage": "^0.7.16",
+    "solhint-plugin-prettier": "^0.0.5"
   }
 }
