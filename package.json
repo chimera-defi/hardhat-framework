@@ -1,6 +1,6 @@
 {
-  "name": "@boringcrypto/hardhat-framework",
-  "version": "1.2.0",
+  "name": "@chimera-defi/hardhat-framework",
+  "version": "1.2.1",
   "description": "Common test utilities for hardhat development",
   "main": "index.js",
   "scripts": {
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/boringcrypto/hardhat-framework.git"
+    "url": "git+https://github.com/chimera-defi/hardhat-framework.git"
   },
-  "author": "BoringCrypto, Keno, I'm Software",
+  "author": "BoringCrypto, Keno, I'm Software, ChimeraDefi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/boringcrypto/hardhat-framework/issues"
+    "url": "https://github.com/chimera-defi/hardhat-framework/issues"
   },
-  "homepage": "https://github.com/boringcrypto/hardhat-framework#readme",
+  "homepage": "https://github.com/chimera-defi/hardhat-framework#readme",
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
