@@ -1,6 +1,10 @@
+let secrets = false;
 if (process.env.DOTENV_PATH) {
     console.log("Using custom .env path:", process.env.DOTENV_PATH)
     require("dotenv").config({ path: process.env.DOTENV_PATH })
+} else if (process.env.SECRETS_PATH) {
+    console.log("Using custom secrets path:", process.env.SECRETS_PATH)
+    secrets = require("./secrets.js");
 } else {
     require("dotenv")
 }
@@ -45,7 +49,7 @@ function hardhat(userSettings) {
 
     const { ethers } = require("ethers")
 
-    const test_accounts = process.env.MNEMONIC && process.env.FUNDER_MNEMONIC
+    let test_accounts = process.env.MNEMONIC && process.env.FUNDER_MNEMONIC
     ? [
         { privateKey: ethers.Wallet.fromMnemonic(process.env.MNEMONIC).privateKey, balance: "9900000000000000000000" }, 
         { privateKey: ethers.Wallet.fromMnemonic(process.env.FUNDER_MNEMONIC).privateKey, balance: "9900000000000000000000" } 
@@ -55,11 +59,17 @@ function hardhat(userSettings) {
         accountsBalance: "990000000000000000000",
     }
 
-    const accounts =
+    let accounts =
         process.env.MNEMONIC && process.env.FUNDER_MNEMONIC
             ? [ethers.Wallet.fromMnemonic(process.env.MNEMONIC).privateKey, ethers.Wallet.fromMnemonic(process.env.FUNDER_MNEMONIC).privateKey]
             : []
 
+    if (secrets) {
+        accounts = [`0x${secrets.MAINNET_PRIVATE_KEY}`]
+    }
+    if (process.env.PRIVATE_KEY) {
+        accounts = [`0x${process.env.PRIVATE_KEY}`]
+    }
     let networks = {
         hardhat: Object.assign(
             {
