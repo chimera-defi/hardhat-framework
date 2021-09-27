@@ -253,6 +253,15 @@ function hardhat(userSettings) {
       saveDeployments: true,
       tags: ["staging"],
     },
+    metis: {
+      url: "https://rocketfuel.metis.io/?owner=435",
+      accounts,
+      chainId: 435,
+      live: true,
+      saveDeployments: true,
+      gasPrice: 15000000,
+      ovm: true,
+    }
   }
 
   return merge({
@@ -298,11 +307,20 @@ function hardhat(userSettings) {
       sources: "contracts",
       tests: "test",
     },
-    solidity: compilers(),
+    solidity: compilersSol(),
+    ovm: metisOvm(),
   }, userSettings)
 }
 
-function compilers() {
+function metisOvm() {
+  return {
+    solcVersion: '0.7.6', // Currently, we only support 0.5.16, 0.6.12, and 0.7.6 of the Solidity compiler
+    optimizer: true,
+    runs: 20
+}
+}
+
+function compilersSol() {
   return {
     compilers: [
       {
@@ -334,6 +352,15 @@ function compilers() {
       },
       {
         version: "0.7.5",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.7.6",
         settings: {
           optimizer: {
             enabled: true,
