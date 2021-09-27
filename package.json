@@ -22,7 +22,7 @@
     "@nomiclabs/hardhat-etherscan": "^2.1.5",
     "chai": "^4.3.4",
     "dotenv": "^8.2.0",
-    "ethereum-waffle": "^3.3.0",
+    "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.4",
     "hardhat": "^2.2.1",
     "hardhat-deploy": "^0.7.5",
