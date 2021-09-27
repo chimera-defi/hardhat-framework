@@ -46,6 +46,10 @@ function hardhat(userSettings) {
   require("hardhat-deploy")
   require("solidity-coverage")
   require("hardhat-gas-reporter")
+  require("@nomiclabs/hardhat-etherscan");
+  require("hardhat-deploy-ethers");
+  require("hardhat-contract-sizer");
+  require("hardhat-abi-exporter");
 
   const { ethers } = require("ethers")
 

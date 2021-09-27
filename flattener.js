@@ -1,6 +1,8 @@
 
 // imported from https://github.com/boringcrypto/dictator-dao/blob/main/hardhat.config.js
+import { task, subtask} from "hardhat/config";
 const fs = require("fs");
+const path = require("path");
 
 function getSortedFiles(dependenciesGraph) {
   const tsort = require("tsort");
