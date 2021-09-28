@@ -1,134 +1,143 @@
 
 // imported from https://github.com/boringcrypto/dictator-dao/blob/main/hardhat.config.js
-import { task, subtask} from "hardhat/config";
-const fs = require("fs");
-const path = require("path");
 
-function getSortedFiles(dependenciesGraph) {
-  const tsort = require("tsort");
-  const graph = tsort();
+function flattener() {
 
-  const filesMap = {};
-  const resolvedFiles = dependenciesGraph.getResolvedFiles();
-  resolvedFiles.forEach(f => (filesMap[f.sourceName] = f));
 
-  for (const [from, deps] of dependenciesGraph.entries()) {
-    for (const to of deps) {
-      graph.add(to.sourceName, from.sourceName);
+  const { task, subtask } = require("hardhat/config");
+  const fs = require("fs");
+  const path = require("path");
+
+  function getSortedFiles(dependenciesGraph) {
+    const tsort = require("tsort");
+    const graph = tsort();
+
+    const filesMap = {};
+    const resolvedFiles = dependenciesGraph.getResolvedFiles();
+    resolvedFiles.forEach(f => (filesMap[f.sourceName] = f));
+
+    for (const [from, deps] of dependenciesGraph.entries()) {
+      for (const to of deps) {
+        graph.add(to.sourceName, from.sourceName);
+      }
     }
+
+    const topologicalSortedNames = graph.sort();
+
+    // If an entry has no dependency it won't be included in the graph, so we
+    // add them and then dedup the array
+    const withEntries = topologicalSortedNames.concat(resolvedFiles.map(f => f.sourceName));
+
+    const sortedNames = [...new Set(withEntries)];
+    return sortedNames.map(n => filesMap[n]);
   }
 
-  const topologicalSortedNames = graph.sort();
+  function getFileWithoutImports(resolvedFile) {
+    const IMPORT_SOLIDITY_REGEX = /^\s*import(\s+)[\s\S]*?;\s*$/gm;
 
-  // If an entry has no dependency it won't be included in the graph, so we
-  // add them and then dedup the array
-  const withEntries = topologicalSortedNames.concat(resolvedFiles.map(f => f.sourceName));
+    return resolvedFile.content.rawContent.replace(IMPORT_SOLIDITY_REGEX, "").trim();
+  }
 
-  const sortedNames = [...new Set(withEntries)];
-  return sortedNames.map(n => filesMap[n]);
-}
+  subtask("flat:get-flattened-sources", "Returns all contracts and their dependencies flattened")
+    .addOptionalParam("files", undefined, undefined, types.any)
+    .addOptionalParam("output", undefined, undefined, types.string)
+    .setAction(async ({ files, output }, { run }) => {
+      const dependencyGraph = await run("flat:get-dependency-graph", { files });
+      console.log(dependencyGraph);
 
-function getFileWithoutImports(resolvedFile) {
-  const IMPORT_SOLIDITY_REGEX = /^\s*import(\s+)[\s\S]*?;\s*$/gm;
+      let flattened = "";
 
-  return resolvedFile.content.rawContent.replace(IMPORT_SOLIDITY_REGEX, "").trim();
-}
-
-subtask("flat:get-flattened-sources", "Returns all contracts and their dependencies flattened")
-  .addOptionalParam("files", undefined, undefined, types.any)
-  .addOptionalParam("output", undefined, undefined, types.string)
-  .setAction(async ({files, output}, {run}) => {
-    const dependencyGraph = await run("flat:get-dependency-graph", {files});
-    console.log(dependencyGraph);
-
-    let flattened = "";
-
-    if (dependencyGraph.getResolvedFiles().length === 0) {
-      return flattened;
-    }
-
-    const sortedFiles = getSortedFiles(dependencyGraph);
-
-    let isFirst = true;
-    for (const file of sortedFiles) {
-      if (!isFirst) {
-        flattened += "\n";
+      if (dependencyGraph.getResolvedFiles().length === 0) {
+        return flattened;
       }
-      flattened += `// File ${file.getVersionedName()}\n`;
-      flattened += `${getFileWithoutImports(file)}\n`;
 
-      isFirst = false;
-    }
+      const sortedFiles = getSortedFiles(dependencyGraph);
 
-    // Remove every line started with "// SPDX-License-Identifier:"
-    flattened = flattened.replace(/SPDX-License-Identifier:/gm, "License-Identifier:");
+      let isFirst = true;
+      for (const file of sortedFiles) {
+        if (!isFirst) {
+          flattened += "\n";
+        }
+        flattened += `// File ${file.getVersionedName()}\n`;
+        flattened += `${getFileWithoutImports(file)}\n`;
 
-    flattened = `// SPDX-License-Identifier: MIXED\n\n${flattened}`;
+        isFirst = false;
+      }
 
-    // Remove every line started with "pragma experimental ABIEncoderV2;" except the first one
-    flattened = flattened.replace(
-      /pragma experimental ABIEncoderV2;\n/gm,
-      (
-        i => m =>
-          !i++ ? m : ""
-      )(0),
-    );
+      // Remove every line started with "// SPDX-License-Identifier:"
+      flattened = flattened.replace(/SPDX-License-Identifier:/gm, "License-Identifier:");
 
-    flattened = flattened.trim();
-    if (output) {
-      console.log("Writing to", output);
-      fs.writeFileSync(output, flattened);
-      return "";
-    }
-    return flattened;
-  });
+      flattened = `// SPDX-License-Identifier: MIXED\n\n${flattened}`;
 
-subtask("flat:get-dependency-graph")
-  .addOptionalParam("files", undefined, undefined, types.any)
-  .setAction(async ({files}, {run}) => {
-    const sourcePaths =
-      files === undefined ? await run("compile:solidity:get-source-paths") : files.map(f => fs.realpathSync(f));
+      // Remove every line started with "pragma experimental ABIEncoderV2;" except the first one
+      flattened = flattened.replace(
+        /pragma experimental ABIEncoderV2;\n/gm,
+        (
+          i => m =>
+            !i++ ? m : ""
+        )(0),
+      );
 
-    const sourceNames = await run("compile:solidity:get-source-names", {
-      sourcePaths,
+      flattened = flattened.trim();
+      if (output) {
+        console.log("Writing to", output);
+        fs.writeFileSync(output, flattened);
+        return "";
+      }
+      return flattened;
     });
 
-    const dependencyGraph = await run("compile:solidity:get-dependency-graph", {sourceNames});
+  subtask("flat:get-dependency-graph")
+    .addOptionalParam("files", undefined, undefined, types.any)
+    .setAction(async ({ files }, { run }) => {
+      const sourcePaths =
+        files === undefined ? await run("compile:solidity:get-source-paths") : files.map(f => fs.realpathSync(f));
 
-    return dependencyGraph;
-  });
+      const sourceNames = await run("compile:solidity:get-source-names", {
+        sourcePaths,
+      });
 
-task("flat", "Flattens and prints contracts and their dependencies")
-  .addOptionalVariadicPositionalParam("files", "The files to flatten", undefined, types.inputFile)
-  .addOptionalParam("output", "Specify the output file", undefined, types.string)
-  .setAction(async ({files, output}, {run}) => {
-    console.log(files, output);
-    console.log(
-      await run("flat:get-flattened-sources", {
-        files,
-        output,
+      const dependencyGraph = await run("compile:solidity:get-dependency-graph", { sourceNames });
+
+      return dependencyGraph;
+    });
+
+  task("flat", "Flattens and prints contracts and their dependencies")
+    .addOptionalVariadicPositionalParam("files", "The files to flatten", undefined, types.inputFile)
+    .addOptionalParam("output", "Specify the output file", undefined, types.string)
+    .setAction(async ({ files, output }, { run }) => {
+      console.log(files, output);
+      console.log(
+        await run("flat:get-flattened-sources", {
+          files,
+          output,
+        }),
+      );
+    });
+
+  task("flattenAll", "Flatten all files we care about").setAction(async ({ }, { run }) => {
+    let srcpath = "contracts";
+    let files = fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`);
+    srcpath = `${srcpath}/governance`;
+    files = files.concat(fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`));
+
+    try {
+      fs.mkdirSync("flats/contracts/governance", { recursive: true });
+    } catch (e) { }
+
+    await Promise.all(
+      files.map(async file => {
+        if (path.extname(file) == ".sol") {
+          await run("flat:get-flattened-sources", {
+            files: [file],
+            output: `./flats/${file}`,
+          });
+        }
       }),
     );
   });
+}
 
-task("flattenAll", "Flatten all files we care about").setAction(async ({}, {run}) => {
-  let srcpath = "contracts";
-  let files = fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`);
-  srcpath = `${srcpath}/governance`;
-  files = files.concat(fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`));
-
-  try {
-    fs.mkdirSync("flats/contracts/governance", {recursive: true});
-  } catch (e) {}
-
-  await Promise.all(
-    files.map(async file => {
-      if (path.extname(file) == ".sol") {
-        await run("flat:get-flattened-sources", {
-          files: [file],
-          output: `./flats/${file}`,
-        });
-      }
-    }),
-  );
-});
+module.exports = {
+  flattener
+};

@@ -1,4 +1,6 @@
 const config = require('./config')
+const deploy_utils = require('./deploy_utils')
+const flattener = require('./flattener')
 
 const {
     BigNumber,
@@ -345,6 +347,8 @@ function addr(address) {
 }
 
 module.exports = {
+    deploy_utils,
+    flattener,
     config,
     addr,
     getDomainSeparator,
