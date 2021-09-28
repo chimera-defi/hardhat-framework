@@ -322,7 +322,7 @@ function metisOvm() {
     solcVersion: '0.7.6', // Currently, we only support 0.5.16, 0.6.12, and 0.7.6 of the Solidity compiler
     optimizer: true,
     runs: 20
-}
+  }
 }
 
 function compilersSol() {

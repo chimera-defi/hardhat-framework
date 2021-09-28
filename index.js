@@ -1,5 +1,5 @@
 const config = require('./config')
-const {flattener} = require('./flattener')
+const { flattener } = require('./flattener')
 
 const {
     BigNumber,
@@ -172,6 +172,7 @@ function weth(chainId) {
         43114: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7", // Avalanche
         80001: "0x5B67676a984807a212b1c59eBFc9B3568a474F0a", // Mumbai Testnet (MATIC)
         79377087078960: "0xf8456e5e6A225C2C1D74D8C9a4cB2B1d5dc1153b", // Arbitrum Testnet
+        435: "0x420000000000000000000000000000000000aaaa"
     }[chainId.toString()]
 }
 
@@ -197,6 +198,7 @@ function nativeTokenSymbol(chainId) {
         43114: "AVAX", // Avalanche
         80001: "MATIC", // Mumbai Testnet (MATIC)
         79377087078960: "ETH", // Arbitrum Testnet
+        435: "METIS",
     }[chainId.toString()]
 }
 
