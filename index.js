@@ -1,5 +1,4 @@
 const config = require('./config')
-const {deploy_utils} = require('./deploy_utils')
 const {flattener} = require('./flattener')
 
 const {
@@ -214,7 +213,7 @@ function explorer(chainId) {
         97: "https://testnet.bscscan.com", // Binance Testnet
         100: "https://blockscout.com/poa/xdai", // xDAI
         128: "https://hecoinfo.com", // Huobi ECO Chain
-        137: "https://explorer-mainnet.maticvigil.com", // Matic
+        137: "https://polygonscan.com", // Matic
         250: "https://ftmscan.com", // Fantom
         256: "", // Huobi ECO Testnet
         4002: "https://explorer.testnet.fantom.network", // Fantom Testnet
@@ -347,7 +346,6 @@ function addr(address) {
 }
 
 module.exports = {
-    deploy_utils,
     flattener,
     config,
     addr,
@@ -365,4 +363,6 @@ module.exports = {
     decodeLogs,
     weth,
     createFixture,
+    nativeTokenSymbol,
+    explorer
 }
