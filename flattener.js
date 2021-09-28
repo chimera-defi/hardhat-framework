@@ -2,8 +2,6 @@
 // imported from https://github.com/boringcrypto/dictator-dao/blob/main/hardhat.config.js
 
 function flattener() {
-
-
   const { task, subtask } = require("hardhat/config");
   const fs = require("fs");
   const path = require("path");

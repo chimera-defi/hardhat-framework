@@ -1,6 +1,6 @@
 
-function deploy_utils() {
-  const hre = require("hardhat");
+function deploy_utils(hre) {
+  // const hre = require("hardhat");
   const fs = require("fs");
   const { ethers } = hre;
 
@@ -299,6 +299,7 @@ function deploy_utils() {
     _sendTokens: _sendTokens,
     _transferOwnership: _transferOwnership,
     _getContract: _getContract,
+    advanceTimeAndBlock: advanceTimeAndBlock,
     DeployHelper: DeployHelper,
   };
 }

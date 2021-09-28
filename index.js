@@ -1,6 +1,6 @@
 const config = require('./config')
-const deploy_utils = require('./deploy_utils')
-const flattener = require('./flattener')
+const {deploy_utils} = require('./deploy_utils')
+const {flattener} = require('./flattener')
 
 const {
     BigNumber,
