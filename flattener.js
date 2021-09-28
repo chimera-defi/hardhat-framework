@@ -116,12 +116,13 @@ function flattener() {
   task("flattenAll", "Flatten all files we care about").setAction(async ({ }, { run }) => {
     let srcpath = "contracts";
     let files = fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`);
-    srcpath = `${srcpath}/governance`;
-    files = files.concat(fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`));
 
-    try {
-      fs.mkdirSync("flats/contracts/governance", { recursive: true });
-    } catch (e) { }
+    // Example left in. How to add more subpaths
+    // srcpath = `${srcpath}/governance`;
+    // files = files.concat(fs.readdirSync(srcpath).map(file => `${srcpath}/${file}`));
+    // try {
+    //   fs.mkdirSync("flats/contracts/governance", { recursive: true });
+    // } catch (e) { }
 
     await Promise.all(
       files.map(async file => {
