@@ -10,12 +10,21 @@ function deploy_utils(hre) {
     fs.writeFileSync("log.txt", txt, { flag: "a" });
   };
 
+  const ethLaunchNetworks = [
+    'rinkeby',
+    'goerli',
+    'mainnet',
+    'ropsten'
+  ];
+
   const isMainnet = launchNetwork => {
     // some behaviours need to be tested with a mainnet fork which behaves the same as mainnet
     return launchNetwork == "localhost" || launchNetwork == "mainnet";
   };
 
-  const _getOverrides = async () => {
+  const _getOverrides = async (launchNetwork = false) => {
+    if (launchNetwork && ethLaunchNetworks.indexOf(launchNetwork) == -1) return {};
+    // https://www.blocknative.com/gas-estimator
     const overridesForEIP1559 = {
       type: 2,
       maxFeePerGas: ethers.utils.parseUnits("10", "gwei"),
@@ -24,6 +33,7 @@ function deploy_utils(hre) {
     };
     const gasPrice = await hre.ethers.provider.getGasPrice();
     overridesForEIP1559.maxFeePerGas = gasPrice;
+    if (gasPrice < gasPrice.maxPriorityFeePerGas) gas.maxPriorityFeePerGas = gasPrice;
     return overridesForEIP1559;
   };
 
@@ -50,7 +60,7 @@ function deploy_utils(hre) {
   };
 
   const _deployContract = async (name, launchNetwork = false, cArgs = []) => {
-    const overridesForEIP1559 = await _getOverrides();
+    const overridesForEIP1559 = await _getOverrides(launchNetwork);
     const factory = await hre.ethers.getContractFactory(name);
     const contract = await factory.deploy(...cArgs, overridesForEIP1559);
     await contract.deployTransaction.wait(1);
@@ -108,7 +118,7 @@ function deploy_utils(hre) {
   };
 
   const _deployInitializableContract = async (name, launchNetwork = false, initArgs = []) => {
-    const overridesForEIP1559 = await _getOverrides();
+    const overridesForEIP1559 = await _getOverrides(launchNetwork);
     const { contract, _ } = await _deployContract(name, launchNetwork, []);
     if (initArgs.length > 0) {
       await contract.initialize(...initArgs, overridesForEIP1559);
@@ -153,7 +163,7 @@ function deploy_utils(hre) {
   };
 
   const _transact = async (tx, ...args) => {
-    let overrides = await _getOverrides();
+    if (!overrides) overrides = await _getOverrides();
     console.log(overrides, args.length, [...args].length)
     let trace = await tx(...args, overrides);
     await trace.wait(); // throws on tx failure
@@ -212,10 +222,14 @@ function deploy_utils(hre) {
       return _getAddress(this.contracts[name]);
     }
     async getOverrides() {
-      return await _getOverrides();
+      return await _getOverrides(this.launchNetwork);
     }
     async transact(tx, ...args) {
-      return await _transact(tx, ...args);
+      let overrides = await this.getOverrides();
+      log(`transact ${tx} ${overrides}, ${args.length}, ${[...args].length}`)
+      let trace = await tx(...args, overrides);
+      await trace.wait(); // throws on tx failure
+      return trace;
     }
     async addContract(name, contractName, address, args) {
       this.contracts[name] = {
@@ -250,16 +264,26 @@ function deploy_utils(hre) {
         }
       }
     }
+    async sendTokens(contract, name, to, amount) {
+      let res = await this.transact(contract.transfer, to, amount);
+      log(`Tokens transferred: From ${contract.address} to ${name} at ${to} : ${amount}`);
+      return res;
+    }
     async distribute(token) {
       await this._checkEnoughTokensToDistribute(token);
       for (let name in this.distribution) {
-        await _sendTokens(this.getContract(token), name, this.addressOf(name), this.distribution[name]);
+        await this.sendTokens(this.getContract(token), name, this.addressOf(name), this.distribution[name]);
       }
     }
 
     // ownership transfer
     async transferOwnershipToMultisig(name) {
-      await _transferOwnership(name, this.getContract(name), this.multisig_address);
+      let to = this.multisig_address;
+      let contract = this.getContract(name);
+
+      let res = await this.transact(contract.transferOwnership, to);
+      log(`Ownership transferred for ${name} at ${contract.address} to ${to}`);
+      return res;
     }
     async transferOwnershipToMultisigMultiple(arrOfNames) {
       for (let name of arrOfNames) {
@@ -274,7 +298,7 @@ function deploy_utils(hre) {
       _postRun(this.contracts, this.launchNetwork);
       let finalBalance = await hre.ethers.provider.getBalance(this.address);
       let finalBlockTime = (await hre.ethers.provider.getBlock()).timestamp;
-      let overrides = await this.getOverrides();
+      let overrides = await this.getOverrides(this.launchNetwork);
 
       log(
         `Total cost of deploys: ${(this.initialBalance - finalBalance).toString()} with gas settings: ${JSON.stringify(
