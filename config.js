@@ -1,12 +1,13 @@
-let secrets = false;
 if (process.env.DOTENV_PATH) {
   console.log("Using custom .env path:", process.env.DOTENV_PATH)
   require("dotenv").config({ path: process.env.DOTENV_PATH })
-} else if (process.env.SECRETS_PATH) {
+} else {
+  require("dotenv").config();
+}
+let secrets = false;
+if (process.env.SECRETS_PATH) {
   console.log("Using custom secrets path:", process.env.SECRETS_PATH)
   secrets = require("./secrets.js");
-} else {
-  require("dotenv")
 }
 
 function isObject(item) {
