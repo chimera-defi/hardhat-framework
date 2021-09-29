@@ -1,6 +1,7 @@
 # hardhat-framework
  
 This package helps configuring a repo for hardhat development. This is very opinionated :)
+Based on boringcrypto/hardhat-framework, which in itself is based on/influences Sushiswaps hardhat-framework
 
 ### How to include this?
 All the packages needed are included in this package, so all you need to add in your repo's `package.json` is:
