@@ -3,6 +3,9 @@
 This package helps configuring a repo for hardhat development. This is very opinionated :)
 Based on boringcrypto/hardhat-framework, which in itself is based on/influences Sushiswaps hardhat-framework
 
+Part of the SharedTools offering for consistent contracts and deployment patterns cross chain
+https://medium.com/@chimera_defi/sharedtools-c2fe8e49ba9b
+
 ### How to include this?
 All the packages needed are included in this package, so all you need to add in your repo's `package.json` is:
 
