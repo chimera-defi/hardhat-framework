@@ -224,7 +224,7 @@ function explorer(chainId) {
         43114: "https://cchain.explorer.avax.network", // Avalanche
         80001: "https://explorer-mumbai.maticvigil.com", // Mumbai Testnet (MATIC)
         79377087078960: "https://explorer.offchainlabs.com/#", // Arbitrum Testnet
-        435: "http://beta-explorer.metis.io/", // Metis testnet
+        435: "http://beta-explorer.metis.io", // Metis testnet
     }[chainId.toString()]
 }
 
