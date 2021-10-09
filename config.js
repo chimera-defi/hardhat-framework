@@ -162,7 +162,7 @@ function hardhat(userSettings) {
       tags: ["staging"],
     },
     matic: {
-      url: "https://rpc-mainnet.maticvigil.com/",
+      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
       accounts,
       chainId: 137,
       live: true,
